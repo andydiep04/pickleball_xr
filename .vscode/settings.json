@@ -67,5 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "pickleball_xr.slnx"
+    "dotnet.defaultSolution": "pickleball_xr.slnx",
+    "liveServer.settings.port": 5501
 }
