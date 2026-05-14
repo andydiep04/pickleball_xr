@@ -27,7 +27,7 @@ public class HandManager : MonoBehaviour
     {
         isRightHand = rightHand;
         paddle.transform.SetParent(rightHand ? rightControllerAnchor : leftControllerAnchor, false);
-        paddle.transform.localPosition = new Vector3(-0.48f, -0.05f, -0.1f);
+        paddle.transform.localPosition = new Vector3(-0.55f, -0.05f, -0.1f);
         paddle.transform.localRotation = Quaternion.Euler(45f, 0f, 0f);
         paddle.transform.localScale = new Vector3(0.025f, 0.01f, 0.01f);
     }

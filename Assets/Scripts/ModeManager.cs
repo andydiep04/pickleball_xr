@@ -1,11 +1,11 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using Meta.XR.MRUtilityKit;
 
 public class ModeManager : MonoBehaviour
 {
     [Header("Menus")]
-    public GameObject launchMenu;
     public GameObject settingsMenu;
     public Transform centerEyeAnchor; // drag CameraRig/TrackingSpace/CenterEyeAnchor here
     public Transform cameraRig; // drag your Camera Rig here
@@ -25,29 +25,46 @@ public class ModeManager : MonoBehaviour
 
     void Start()
     {
-        launchMenu.SetActive(true);
+        // Set initial states
         settingsMenu.SetActive(false);
         virtualCourt.SetActive(false);
         roomMode.SetActive(false);
 
-        StartCoroutine(ShowLaunchMenuWhenReady());
+        // Show the settings menu as the primary interface on start
+        StartCoroutine(ShowSettingsMenuWhenReady());
     }
 
     void Update()
     {
         // Hamburger/menu button on left controller opens/closes settings
-        if (OVRInput.GetDown(OVRInput.Button.Start))
+        if (OVRInput.GetDown(OVRInput.Button.Start, OVRInput.Controller.LTouch))
         {
-            if (launchMenu.activeSelf) return; // don't open settings during launch menu
             ToggleSettingsMenu();
+        }
+
+        if (settingsMenu.activeSelf)
+        {
+            if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
+            {
+                Debug.Log("Virtual Court selected from settings");
+                SelectVirtualCourt();
+            }
+            if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.LTouch))
+            {
+                Debug.Log("Real Room selected from settings");
+                SelectRealRoom();
+            }
         }
     }
 
-    IEnumerator ShowLaunchMenuWhenReady()
+    IEnumerator ShowSettingsMenuWhenReady()
     {
-        // Wait for OVR tracking to initialize
+        // Wait for OVR tracking to initialize (prevents menu spawning at floor/wrong orientation)
         yield return new WaitForSeconds(2f);
-        PositionMenuInFrontOfUser(launchMenu);
+        
+        settingsOpen = true;
+        settingsMenu.SetActive(true);
+        PositionMenuInFrontOfUser(settingsMenu);
     }
 
     void PositionMenuInFrontOfUser(GameObject menu)
@@ -74,41 +91,85 @@ public class ModeManager : MonoBehaviour
     {
         settingsOpen = !settingsOpen;
         settingsMenu.SetActive(settingsOpen);
+        
         if (settingsOpen)
+        {
             PositionMenuInFrontOfUser(settingsMenu);
+        }
     }
 
     IEnumerator SwitchMode(bool toVirtual)
     {
-        // Close menus
-        launchMenu.SetActive(false);
+        settingsOpen = false;
         settingsMenu.SetActive(false);
 
-        // Fade to black
         yield return StartCoroutine(Fade(0f, 1f, 0.5f));
 
         isVirtualMode = toVirtual;
 
         if (toVirtual)
         {
-            // Disable passthrough, enable virtual court
             passthroughLayer.enabled = false;
             virtualCourt.SetActive(true);
             roomMode.SetActive(false);
+            DisableRoomColliders();
 
-            // Position user at center of court
-            cameraRig.position = new Vector3(0, 0, 0);
+            // Move the entire court to sit at the player's current floor level
+            // instead of moving the player to the court
+            float floorY = cameraRig.position.y;
+            virtualCourt.transform.position = new Vector3(0f, floorY, 0f);
+
+            // Now center the player horizontally over the court baseline
+            Vector3 targetHeadPosition = new Vector3(
+                centerEyeAnchor.position.x,
+                centerEyeAnchor.position.y,
+                centerEyeAnchor.position.z
+            );
+            Vector3 offset = targetHeadPosition - centerEyeAnchor.position;
+            cameraRig.position += offset;
         }
         else
         {
-            // Enable passthrough, disable virtual court
             passthroughLayer.enabled = true;
             virtualCourt.SetActive(false);
             roomMode.SetActive(true);
+
+            // Re-enable MRUK-generated colliders
+            EnableRoomColliders();
         }
 
-        // Fade back in
         yield return StartCoroutine(Fade(1f, 0f, 0.5f));
+    }
+
+    void DisableRoomColliders()
+    {
+        // Find all colliders MRUK spawned on room anchors and disable them
+        if (MRUK.Instance == null) return;
+        foreach (var room in MRUK.Instance.Rooms)
+        {
+            foreach (var anchor in room.Anchors)
+            {
+                foreach (var col in anchor.GetComponentsInChildren<Collider>())
+                {
+                    col.enabled = false;
+                }
+            }
+        }
+    }
+
+    void EnableRoomColliders()
+    {
+        if (MRUK.Instance == null) return;
+        foreach (var room in MRUK.Instance.Rooms)
+        {
+            foreach (var anchor in room.Anchors)
+            {
+                foreach (var col in anchor.GetComponentsInChildren<Collider>())
+                {
+                    col.enabled = true;
+                }
+            }
+        }
     }
 
     IEnumerator Fade(float fromAlpha, float toAlpha, float duration)

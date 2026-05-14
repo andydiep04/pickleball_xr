@@ -5,41 +5,43 @@ public class BallSpawner : MonoBehaviour
     public GameObject ballPrefab;
     public Transform leftControllerAnchor;
     public Transform rightControllerAnchor;
-
     public HandManager handManager;
 
     private GameObject heldBall;
-    private Transform spawnHand; // the hand NOT holding the paddle
+    private Transform spawnHand;
+    private OVRInput.Controller throwController;
 
     void Update()
     {
-        // The throwing hand is whichever hand isn't holding the paddle
-        spawnHand = handManager.isRightHand ? leftControllerAnchor : rightControllerAnchor;
+        // Spawn hand and throw controller are always the hand NOT holding the paddle
+        if (handManager.isRightHand)
+        {
+            spawnHand = leftControllerAnchor;
+            throwController = OVRInput.Controller.LTouch;
+        }
+        else
+        {
+            spawnHand = rightControllerAnchor;
+            throwController = OVRInput.Controller.RTouch;
+        }
 
-        // Correct button: A (Button.One) if paddle is right, X (Button.Three) if paddle is left
-        // OVRInput.Button spawnButton = handManager.isRightHand
-        //     ? OVRInput.Button.Three        // X button on left controller
-        //     : OVRInput.Button.One;         // A button on right controller
+        OVRInput.Button spawnButton = OVRInput.Button.One;
 
-        OVRInput.Controller spawnController = handManager.isRightHand
-            ? OVRInput.Controller.LTouch
-            : OVRInput.Controller.RTouch;
-
-        // Hold button to hold ball at hand position
-        if (OVRInput.GetDown(OVRInput.Button.One, spawnController))
+        // Press to spawn
+        if (OVRInput.GetDown(spawnButton, throwController))
         {
             SpawnHeldBall();
         }
 
-        // Keep held ball glued to the throwing hand while button is held
-        if (heldBall != null && OVRInput.Get(OVRInput.Button.One, spawnController))
+        // Hold to keep ball at hand
+        if (heldBall != null && OVRInput.Get(spawnButton, throwController))
         {
             heldBall.transform.position = spawnHand.position;
             heldBall.transform.rotation = spawnHand.rotation;
         }
 
-        // Release → throw
-        if (heldBall != null && OVRInput.GetUp(OVRInput.Button.One, spawnController))
+        // Release to throw
+        if (heldBall != null && OVRInput.GetUp(spawnButton, throwController))
         {
             ThrowBall();
         }
@@ -47,12 +49,9 @@ public class BallSpawner : MonoBehaviour
 
     void SpawnHeldBall()
     {
-        // Don't spawn a second ball if one is already held
         if (heldBall != null) return;
 
         heldBall = Instantiate(ballPrefab, spawnHand.position, spawnHand.rotation);
-
-        // Freeze physics while holding
         Rigidbody rb = heldBall.GetComponent<Rigidbody>();
         rb.isKinematic = true;
     }
@@ -62,11 +61,7 @@ public class BallSpawner : MonoBehaviour
         Rigidbody rb = heldBall.GetComponent<Rigidbody>();
         rb.isKinematic = false;
 
-        OVRInput.Controller throwController = handManager.isRightHand
-            ? OVRInput.Controller.LTouch
-            : OVRInput.Controller.RTouch;
-
-        // Convert local controller velocity to world space
+        // Use the correct controller velocity — the one holding the ball
         Vector3 localVelocity = OVRInput.GetLocalControllerVelocity(throwController);
         Vector3 worldVelocity = Camera.main.transform.TransformDirection(localVelocity);
 
