@@ -51,6 +51,9 @@ public class BallSpawner : MonoBehaviour
     {
         if (heldBall != null) return;
 
+        // Don't spawn if a ball already exists in the scene
+        if (GameObject.FindGameObjectWithTag("Ball") != null) return;
+
         heldBall = Instantiate(ballPrefab, spawnHand.position, spawnHand.rotation);
         Rigidbody rb = heldBall.GetComponent<Rigidbody>();
         rb.isKinematic = true;

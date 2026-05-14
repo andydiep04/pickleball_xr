@@ -13,6 +13,7 @@ public class BallPhysics : MonoBehaviour
     private float hitCooldown = 0f;
     private const float HIT_COOLDOWN_DURATION = 0.2f;
 
+    private GameManager gameManager;
     private Rigidbody rb;
     private PaddlePhysics paddle;
     private SphereCollider sphereCollider;
@@ -24,7 +25,8 @@ public class BallPhysics : MonoBehaviour
         sphereCollider = GetComponent<SphereCollider>();
         paddle = FindFirstObjectByType<PaddlePhysics>();
         if (paddle != null)
-            paddleCollider = paddle.GetComponent<Collider>(); // works with Box or MeshCollider
+            paddleCollider = paddle.GetComponent<Collider>();
+        gameManager = FindFirstObjectByType<GameManager>();
     }
 
     void FixedUpdate()
@@ -139,5 +141,8 @@ public class BallPhysics : MonoBehaviour
 
         rb.linearVelocity = newVel;
         hitCooldown = HIT_COOLDOWN_DURATION;
+
+        if (gameManager != null)
+        gameManager.SetLastHitter(GameManager.LastHitter.Player);
     }
 }
