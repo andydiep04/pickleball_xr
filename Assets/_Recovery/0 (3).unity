@@ -4455,14 +4455,9 @@ MonoBehaviour:
   reactionDelay: 0.4
   courtHalfWidth: 3
   aiBaselineZ: -5.5
-  aiMaxAdvanceZ: -3.5
   hitSpeed: 5
   missChance: 0.2
-  paddleRestLocalPos: {x: 0.5, y: 0.8, z: 0}
-  swingReachZ: 0.8
-  windupReachZ: -0.5
-  paddleVelocityWorld: {x: 0, y: 0, z: 0}
-  bodyVelocityWorld: {x: 0, y: 0, z: 0}
+  targetPaddleRotation: {x: 0, y: 90, z: 0}
 --- !u!1 &1344719597
 GameObject:
   m_ObjectHideFlags: 0
