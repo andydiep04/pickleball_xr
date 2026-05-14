@@ -437,16 +437,15 @@
                 </ul>
             </li>
         </ul>
-    </div>
 
-    <b>Wednesday, May 13, 2026</b>
+        <b>Wednesday, May 13, 2026</b>
         <ul>
 
             <li>Action Items: </li>
                 <ul>
                     <li>Andy Diep</li>
                         <ul>
-                            <li></li>
+                            <li>Improve the AI Opponent ability to hit the ball back to the player</li>
                         </ul>
                     <li>Rohith Banda</li>
                         <ul>
@@ -461,10 +460,10 @@
                 <ul>
                     <li>Andy Diep</li>
                         <ul>
-                            <li>Drastically improved the paddle and ball physics</li>
+                            <li>Drastically improved the paddle and ball physics (Solution: updated BallPhysics.cs and PaddlePhysics.cs)</li>
                             <li>Create menu for user to switch between real room and virtual pickleball court</li>
                             <li>Created physics materials for paddle, ball, pickleball court, and net</li>
-                            <li></li>
+                            <li>Implemented rudimentary AI opponent with ball prediction and movement</li>
                         </ul>
                     <li>Rohith Banda</li>
                         <ul>
@@ -480,13 +479,27 @@
                 <ul>
                     <li>Andy Diep</li>
                         <ul>
-                            <li>Problem: The ball travels in the wrong direction or phases through the paddle if the user swings it fast</li>
+                            <li>Challenge: Settings Menu Visibility - the settings and launch menu were not visible or positioned correctly</li>
                             <li>Attempts to solve:</li>
                             <ul>
-                                <li>In the Paddle Rigidbody, tried setting Interpolate to "Interpolate", but that caused the paddle to no longer follow the controller movements (so right now it is set to None)</li>
-                                <li>In the Paddle Rigidbody, tried setting Collision Detection to "Continuous Speculative"</li>
-                                <li>In the Ball Rigidbody, tried setting Interpolate to "Interpolate"</li>
-                                <li>In the Ball Rigidbody, tried setting Collision Detection to "Continuous Dynamic"</li>
+                                <li>Tried to adjust the scale and size and width/height to ensure they were visible in world space</li>
+                                <li>Used the CenterEyeAnchor instead of the parent Camera Rig transform</li>
+                                <li>Decided to remove the Launch Menu and just have a Settings Menu</li>
+                            </ul>
+                            <li>Challenge: Controller Interaction and Rays - users could not interact with the settings menu buttons because the rays were not showing up</li>
+                            <li>Attempts to solve:</li>
+                            <ul>
+                                <li>Added the OVR Interaction Comprehensive building block to provide foundation for ray-based interactions</li>
+                                <li>Replaced standard Unity components with Meta-specific ones, such as OVRRaycaster and PointableCanvasModule</li>
+                                <li>Implemented fallback using controller button presses (X for real room and A for virtual court)</li>
+                            </ul>
+                            <li>Challenge: Gameplay and Scoring Logic - ball was despawning before it bounced, player spawning inside net, AI was always receiving points</li>
+                            <li>Attempts to solve:</li>
+                            <ul>
+                                <li>Changed from absolute positioning in the Unity editor to offset-based movement</li>
+                                <li>Updated GameManager to track the last hitter of the ball, which determines who wins the point</li>
+                                <li>Changed the out of bounds y-value to -5 so the ball despawns if it falls off the court</li>
+                                <li>Made ball despawn after a few seconds if it is no longer playable</li>
                             </ul>
                         </ul>
                     <li>Rohith Banda</li>
@@ -501,10 +514,11 @@
             </li>
             <li>Miscellaneous:
                 <ul>
-                    <li>Added images of the virtual pickleball paddles and balls next to their real life counterparts</li>
+                    <li></li>
                 </ul>
             </li>
         </ul>
+    </div>
     </div>
     
   </body>
