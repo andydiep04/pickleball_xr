@@ -30,6 +30,7 @@ TagManager:
   - SamplesInfoPanel
   - QDSUIToggleCheckboxRadio
   - Ball
+  - Paddle
   layers:
   - Default
   - TransparentFX
