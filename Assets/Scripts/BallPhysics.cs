@@ -18,14 +18,17 @@ public class BallPhysics : MonoBehaviour
     private PaddlePhysics paddle;
     private SphereCollider sphereCollider;
     private Collider paddleCollider;
+    private PaddleZones paddleZones;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         sphereCollider = GetComponent<SphereCollider>();
         paddle = FindFirstObjectByType<PaddlePhysics>();
-        if (paddle != null)
+        if (paddle != null){
             paddleCollider = paddle.GetComponent<Collider>();
+            paddleZones = paddle.GetComponent<PaddleZones>();
+        }
         gameManager = FindFirstObjectByType<GameManager>();
     }
 
@@ -141,6 +144,9 @@ public class BallPhysics : MonoBehaviour
 
         rb.linearVelocity = newVel;
         hitCooldown = HIT_COOLDOWN_DURATION;
+
+        if (paddleZones != null)
+            paddleZones.HandleHit(hitPoint);
 
         if (gameManager != null)
         gameManager.SetLastHitter(GameManager.LastHitter.Player);

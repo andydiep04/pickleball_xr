@@ -101,7 +101,7 @@ public class AIOpponent : MonoBehaviour
             return;
         }
 
-        bool ballComingTowardAI = IsBallComingTowardAI();
+        bool ballComingTowardAI = ball.position.z < 0f && ballRb.linearVelocity.z < -0.1f;
 
         if (ballComingTowardAI)
         {
@@ -166,15 +166,6 @@ public class AIOpponent : MonoBehaviour
         hasMissed = Random.value < missChance;
     }
 
-    bool IsBallComingTowardAI()
-    {
-        if (ball == null || ballRb == null)
-            return false;
-
-        // Ball is ahead of the AI and moving toward it.
-        return ball.position.z > transform.position.z && ballRb.linearVelocity.z < -0.1f;
-    }
-
     // ── Body positioning ─────────────────────────────────────────────
     void PredictAndMove()
     {
@@ -191,10 +182,9 @@ public class AIOpponent : MonoBehaviour
             + 0.5f * Physics.gravity * timeToBaseline * timeToBaseline;
         predictedBallPos.y = Mathf.Clamp(predictedBallPos.y, 0.3f, 2.5f);
 
-        // Also find where the ball will be sooner — step forward to intercept.
-        // When the ball is coming from the player, move forward of the baseline.
-        float interceptZ = ball.position.z + (vel.z < 0f ? -0.8f : 0.8f);
-        interceptZ = Mathf.Clamp(interceptZ, aiBaselineZ, aiMaxAdvanceZ);
+        // Also find where the ball will be sooner — step forward to intercept
+        // rather than waiting at the baseline. Meet it at swingReachZ in front of us.
+        float interceptZ = Mathf.Clamp(ball.position.z + 0.8f, aiMaxAdvanceZ, aiBaselineZ);
         float timeToIntercept = Mathf.Abs(ball.position.z - interceptZ) / Mathf.Max(speedZ, 0.01f);
         Vector3 interceptPos = ball.position
             + vel * timeToIntercept
@@ -205,8 +195,8 @@ public class AIOpponent : MonoBehaviour
             aimPos.x += Random.Range(0.8f, 1.5f) * (Random.value > 0.5f ? 1 : -1);
 
         float clampedX = Mathf.Clamp(aimPos.x, -courtHalfWidth, courtHalfWidth);
-        // Step forward in Z to intercept — clamped so AI never crosses its maximum advance.
-        float clampedZ = Mathf.Clamp(interceptZ, aiBaselineZ, aiMaxAdvanceZ);
+        // Step forward in Z to intercept — clamped so AI never crosses mid-court
+        float clampedZ = Mathf.Clamp(interceptZ, aiMaxAdvanceZ, aiBaselineZ);
 
         targetBodyPosition = new Vector3(clampedX, transform.position.y, clampedZ);
     }
